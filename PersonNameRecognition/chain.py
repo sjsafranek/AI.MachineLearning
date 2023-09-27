@@ -10,6 +10,7 @@ class Chain(object):
 		self.size = size
 		self.data = {}
 	
+	@functools.cache
 	def getTokens(self, text):
 		text = text.lower()
 		text = '_' + text + '_'
