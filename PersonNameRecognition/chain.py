@@ -2,83 +2,14 @@ import json
 import pickle
 import functools
 
+# import local modules
+import sys
+from pathlib import Path
+root = Path(__file__).absolute().parent.parent
+sys.path.append(str(root))
 
-
-# https://mathspp.com/blog/custom-json-encoder-and-decoder
-
-
-
-def mean(numbers):
-	return sum(numbers) / len(numbers)	
-
-
-
-
-class ExtendedDecoder(json.JSONDecoder):
-	def __init__(self, **kwargs):
-		kwargs["object_hook"] = self.object_hook
-		super().__init__(**kwargs)
-
-	def object_hook(self, obj):
-		try:
-			name = obj["__extended_json_type__"]
-			decoder = getattr(self, f"decode_{name}")
-		except (KeyError, AttributeError):
-			return obj
-		else:
-			return decoder(obj)
-
-
-class ExtendedEncoder(json.JSONEncoder):
-	def default(self, obj):
-		name = type(obj).__name__
-		try:
-			encoder = getattr(self, f"encode_{name}")
-		except AttributeError:
-			super().default(obj)
-		else:
-			encoded = encoder(obj)
-			encoded["__extended_json_type__"] = name
-			return encoded
-
-
-class ChainEncoder(ExtendedEncoder):
-	def encode_set(self, obj):
-		return {"set": list(obj)}
-
-	def encode_complex(self, c):
-		return {"real": c.real, "imag": c.imag}
-
-	def encode_range(self, r):
-		return {"start": r.start, "stop": r.stop, "step": r.step}
-
-
-class ChainDecoder(ExtendedDecoder):
-	def decode_set(self, obj):
-		return set(obj["set"])
-
-	def decode_complex(self, obj):
-		return complex(obj["real"], obj["imag"])
-
-	def decode_range(self, obj):
-		return range(obj["start"], obj["stop"], obj["step"])
-
-
-
-
-# class SetEncoder(json.JSONEncoder):
-# 	def default(self, obj):
-# 		if isinstance(obj, set):
-# 			return list(obj)
-# 		return json.JSONEncoder.default(self, obj)
-
-
-
-# class SetDecoder(json.JSONDecoder):
-# 	def default(self, obj):
-# 		if isinstance(obj, list):
-# 			return set(obj)
-# 		return json.JSONDecoder.default(self, obj)
+import utils.math_utils as math_utils
+import utils.json_helpers as json_helpers
 
 
 
@@ -131,7 +62,7 @@ class Chain(object):
 			scores.append(self._calculateScore(text))
 		if 0 == len(scores):
 			return 0
-		return mean(scores)
+		return math_utils.mean(scores)
 
 	def _calculateScore(self, text):
 		scores = []
@@ -146,20 +77,20 @@ class Chain(object):
 						score = 1
 			previous = current
 			scores.append(score)
-		return 100 * mean(scores)
+		return 100 * math_utils.mean(scores)
 
 	@classmethod
 	def loadJson(cls, filename):
 		with open(filename, 'r', encoding="utf-8") as fh:
 			raw = fh.read()
-			data = json.loads(raw, cls=ChainDecoder)
+			data = json.loads(raw, cls=json_helpers.ExtendedDecoder)
 			chain = Chain(data["size"])
 			chain.data = data["chain"]
 			return chain
 
 	def dumpJson(self, filename):
 		with open(filename, 'w', encoding="utf-8") as fh:
-			raw = json.dumps({"size": self.size, "chain": self.data}, cls=ChainEncoder)
+			raw = json.dumps({"size": self.size, "chain": self.data}, cls=json_helpers.ExtendedEncoder)
 			fh.write(raw)
 
 	@classmethod
@@ -170,3 +101,4 @@ class Chain(object):
 	def dump(self, filename):
 		with open(filename, 'wb') as fh:
 			pickle.dump(self, fh)
+
