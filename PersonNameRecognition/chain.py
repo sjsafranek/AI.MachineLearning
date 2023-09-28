@@ -1,4 +1,5 @@
 import json
+import pickle
 import functools
 
 
@@ -145,16 +146,27 @@ class Chain(object):
 						score = 1
 			previous = current
 			scores.append(score)
-		return 100 * mean(scores)		
+		return 100 * mean(scores)
 
-	def load(self, filename):
+	@classmethod
+	def loadJson(cls, filename):
 		with open(filename, 'r', encoding="utf-8") as fh:
 			raw = fh.read()
-			self.data = json.loads(raw, cls=ChainDecoder)
-		print(type(list(self.data.values())[0]))
+			data = json.loads(raw, cls=ChainDecoder)
+			chain = Chain(data["size"])
+			chain.data = data["chain"]
+			return chain
+
+	def dumpJson(self, filename):
+		with open(filename, 'w', encoding="utf-8") as fh:
+			raw = json.dumps({"size": self.size, "chain": self.data}, cls=ChainEncoder)
+			fh.write(raw)
+
+	@classmethod
+	def load(cls, filename):
+		with open(filename, 'rb') as fh:
+			return pickle.load(fh)
 
 	def dump(self, filename):
-		print(type(list(self.data.values())[0]))
-		with open(filename, 'w', encoding="utf-8") as fh:
-			raw = json.dumps(self.data, cls=ChainEncoder)
-			fh.write(raw)
+		with open(filename, 'wb') as fh:
+			pickle.dump(self, fh)
