@@ -2,27 +2,36 @@ import json
 import pickle
 import functools
 
+
 # import local modules
 import sys
 from pathlib import Path
-root = Path(__file__).absolute().parent.parent
+root = Path(__file__).absolute().parent
 sys.path.append(str(root))
 
 import utils.math_utils as math_utils
 import utils.json_helpers as json_helpers
 
 
-
 class Chain(object):
 
-	def __init__(self, size=1):
+	def __init__(self, size=1, dedupe=True):
 		if (size < 1):
 			raise ValueError("Size cannot be less than 1")
 		self.size = size
+		self.dedupe = dedupe
 		self.data = {}
 	
 	def _newCollection(self):
-		return set()
+		if self.dedupe:
+			return set()
+		return list()
+
+	def _add(self, previous, current):
+		if self.dedupe:
+			self.data[previous].add(current)
+			return
+		self.data[previous].append(current)
 
 	@functools.cache
 	def getTokens(self, text):
@@ -42,11 +51,9 @@ class Chain(object):
 		previous = None
 		for current in self.getTokens(text):
 			if current not in self.data:
-				#self.data[current] = []
 				self.data[current] = self._newCollection()
-			if None != previous and current not in self.data[previous]:
-				#self.data[previous].append(current)
-				self.data[previous].add(current)
+			if None != previous:
+				self._add(previous, current)
 			previous = current
 
 	@functools.cache
@@ -84,13 +91,20 @@ class Chain(object):
 		with open(filename, 'r', encoding="utf-8") as fh:
 			raw = fh.read()
 			data = json.loads(raw, cls=json_helpers.ExtendedDecoder)
-			chain = Chain(data["size"])
-			chain.data = data["chain"]
+			chain = Chain(size=data["size"], dedupe=data["dedupe"])
+			chain.data = data["data"]
 			return chain
 
 	def dumpJson(self, filename):
 		with open(filename, 'w', encoding="utf-8") as fh:
-			raw = json.dumps({"size": self.size, "chain": self.data}, cls=json_helpers.ExtendedEncoder)
+			raw = json.dumps(
+				{
+					"__type__": "chain",
+					"size": self.size, 
+					"dedupe": self.dedupe, 
+					"data": self.data
+				}, 
+				cls=json_helpers.ExtendedEncoder)
 			fh.write(raw)
 
 	@classmethod

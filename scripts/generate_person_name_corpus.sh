@@ -14,8 +14,8 @@ rm data/name_corpus.txt
 echo "Downloading source data"
 curl -o tmp/first_names.zip https://raw.githubusercontent.com/philipperemy/name-dataset/master/names_dataset/v3/first_names.zip
 curl -o tmp/last_names.zip https://raw.githubusercontent.com/philipperemy/name-dataset/master/names_dataset/v3/last_names.zip
-unzip tmp/first_names.zip -d tmp
-unzip tmp/last_names.zip -d tmp
+unzip -o tmp/first_names.zip -d tmp
+unzip -o tmp/last_names.zip -d tmp
 
 
 echo "Sanitizing data"
