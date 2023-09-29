@@ -3,8 +3,6 @@ import os
 from chain import Chain
 
 
-
-
 # if os.path.exists('data/chain.json'):
 # 	chain.load('data/chain.json')
 # else:
