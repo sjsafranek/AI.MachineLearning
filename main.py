@@ -1,22 +1,11 @@
 import os
 import argparse
 
-from api import *
-
-
-ApiMethods = {
-	"IsPersonsName": IsPersonsName
-}
-
-
-def do(method, **kwargs):
-	if method in ApiMethods:
-		print(ApiMethods[method](**kwargs))
-		return
-	raise Exception(f"Method not found: {method}")
+from api import execute
 
 
 if __name__ == "__main__":
+
 	parser = argparse.ArgumentParser(
 					prog='ProgramName',
 					description='What the program does',
@@ -24,5 +13,7 @@ if __name__ == "__main__":
 
 	parser.add_argument('method', type=str, help='method to invoke')
 	parser.add_argument('-n', '--name', default=None, type=str, nargs='?', help='persons name to analyze')
+	parser.add_argument('-v', '--verbose', action='store_true')
 	args = parser.parse_args()
-	do(**vars(args))
+
+	execute(**vars(args))

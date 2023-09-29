@@ -24,5 +24,5 @@ chain.dump('data/chain.pickle')
 chain.dumpJson('data/chain.json')
 
 
-def IsPersonsName(name):
+def IsPersonsName(name, **kwargs):
 	return chain.calculateScore(name)
