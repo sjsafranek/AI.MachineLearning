@@ -29,10 +29,10 @@ class ExtendedDecoder(json.JSONDecoder):
 		return range(obj["start"], obj["stop"], obj["step"])
 
 	def decode_datetime(self, obj):
-		return datetime.datetime.strptime(obj, '%Y-%m-%dT%H:%M:%S.%f')
+		return datetime.datetime.strptime(obj["datetime"], '%Y-%m-%dT%H:%M:%S.%f')
 
 	def decode_date(self, obj):
-		return datetime.datetime.strptime(obj, '%Y-%m-%d')
+		return datetime.datetime.strptime(obj["date"], '%Y-%m-%d')
 
 
 
@@ -59,10 +59,10 @@ class ExtendedEncoder(json.JSONEncoder):
 		return {"start": r.start, "stop": r.stop, "step": r.step}
 
 	def encode_datetime(self, dt):
-		return dt.isoformat()
+		return {"datetime": dt.isoformat() }
 
 	def encode_date(self, d):
-		return d.isoformat()
+		return {"date": d.isoformat() }
 
 
 
@@ -71,3 +71,20 @@ class ExtendedEncoder(json.JSONEncoder):
 # print(n)
 #print(datetime.datetime.strptime(datetime.datetime.now().date().isoformat(), '%Y-%m-%d'))
 #print(datetime.datetime.strptime(datetime.datetime.now().isoformat(), '%Y-%m-%dT%H:%M:%S.%f'))
+
+
+# data1 = [
+# 	{
+# 		'dt': datetime.datetime.now()
+# 	},
+# 	{
+# 		'd': datetime.datetime.now().date()
+# 	}
+# ]
+# print(data1)
+
+# raw = json.dumps(data1, cls=ExtendedEncoder)
+# print(raw)
+
+# data2 = json.loads(raw, cls=ExtendedDecoder)
+# print(data2)
