@@ -1,5 +1,5 @@
 import json
-
+import datetime
 
 # https://mathspp.com/blog/custom-json-encoder-and-decoder
 
@@ -28,6 +28,12 @@ class ExtendedDecoder(json.JSONDecoder):
 	def decode_range(self, obj):
 		return range(obj["start"], obj["stop"], obj["step"])
 
+	def decode_datetime(self, obj):
+		return datetime.datetime.strptime(obj, '%Y-%m-%dT%H:%M:%S.%f')
+
+	def decode_date(self, obj):
+		return datetime.datetime.strptime(obj, '%Y-%m-%d')
+
 
 
 class ExtendedEncoder(json.JSONEncoder):
@@ -52,4 +58,16 @@ class ExtendedEncoder(json.JSONEncoder):
 	def encode_range(self, r):
 		return {"start": r.start, "stop": r.stop, "step": r.step}
 
+	def encode_datetime(self, dt):
+		return dt.isoformat()
 
+	def encode_date(self, d):
+		return d.isoformat()
+
+
+
+# d = datetime.datetime.now().date()
+# n = type(d).__name__
+# print(n)
+#print(datetime.datetime.strptime(datetime.datetime.now().date().isoformat(), '%Y-%m-%d'))
+#print(datetime.datetime.strptime(datetime.datetime.now().isoformat(), '%Y-%m-%dT%H:%M:%S.%f'))
